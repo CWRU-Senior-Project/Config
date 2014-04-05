@@ -8,7 +8,10 @@ public class HtmlParser_Test
 	{
 		HtmlParser parser = new HtmlParser();
 		StructureGenerator gen = new StructureGenerator();
-		TagNode parent = gen.generateNodes(gen.readFromFile("C:\\Users\\EPHESUS\\Downloads\\SDF_v1.html"));
+		TagNode parent = gen.generateNodes(gen.readFromFile("C:\\Users\\"
+//				+ "EPHESUS"
+				+ "jac23_000"
+				+ "\\Downloads\\SDF_v2.html"));
 		System.out.println(parent.getCompleteRecord());
 		
 	//	System.out.println(gen.typeMap);
