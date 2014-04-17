@@ -5,6 +5,229 @@ import java.util.List;
 //	TODO: implement single-pass to answer all queries
 public class Querier 
 {
+	
+	boolean validateWorldFile(TagNode referenceRoot, TagNode worldRoot)
+	{
+		//	9a	terrain element location + orientation
+		boolean terrainReqMet = isTerrainReqMet(referenceRoot, worldRoot);
+		
+		//	9b	location, orientation, mass of obstacles
+		boolean obstacleReqMet = isObstacleReqMet(referenceRoot, worldRoot);
+		
+		//	9c	material has frictional value
+		boolean materialReqMet = isMaterialReqMet(referenceRoot, worldRoot);
+		
+		//	10a	1+ wheel with material
+		boolean wheelReqMet = isWheelReqMet(referenceRoot, worldRoot);
+		
+		//	10b	mass = sum of components
+		boolean componentMassReqMet = isComponentMassReqMet(referenceRoot, worldRoot);
+		
+		return terrainReqMet & obstacleReqMet & materialReqMet & wheelReqMet & componentMassReqMet;
+	}
+	
+	
+	boolean isTerrainReqMet(TagNode referenceRoot, TagNode worldRoot)
+	{
+		boolean terrainReqMet = true;
+		List<TagNode> terrainList = getTerrainList(worldRoot);
+		for (TagNode terrain : terrainList)
+		{
+			if ( 
+					(!locationSpecified(terrain))
+					|| (!orientationSpecified(terrain))
+				)
+			{
+				terrainReqMet = false;
+				break;
+			}
+		}
+		
+		return terrainReqMet;
+	}
+	
+	boolean isObstacleReqMet(TagNode referenceRoot, TagNode worldRoot)
+	{
+		boolean obstacleReqMet = true;
+		List<TagNode> obstacleList = getObstacleList(worldRoot);
+		for (TagNode obstacle : obstacleList)
+		{
+			if (
+					(!locationSpecified(obstacle))
+					|| (!orientationSpecified(obstacle))
+					|| (massSpecified(obstacle))
+				)
+			{
+				obstacleReqMet = false;
+				break;
+			}
+		}
+		
+		return obstacleReqMet;
+	}
+	
+	boolean isMaterialReqMet(TagNode referenceRoot, TagNode worldRoot)
+	{
+		boolean materialReqMet = true;
+		List<TagNode> materialList = getMaterialList(worldRoot);
+		for (TagNode material : materialList)
+		{
+			if (
+					(frictionSpecified(material))
+				)
+			{
+				materialReqMet = false;
+				break;
+			}
+		}
+		
+		return materialReqMet;
+	}
+	
+	boolean isWheelReqMet(TagNode referenceRoot, TagNode worldRoot)
+	{
+		boolean wheelReqMet = true;
+		List<TagNode> vehicleList = new ArrayList<TagNode>();	//	TODO: replace with get method
+		for (TagNode vehicle : vehicleList)
+		{
+			List<TagNode> wheelList = new ArrayList<TagNode>();	//	TODO: replace with get method
+			
+			if ((wheelReqMet) && (0 < wheelList.size()))
+			{
+				for (TagNode wheel : wheelList)
+				{
+					if (
+							(materialSpecified(wheel))
+						)
+					{
+						wheelReqMet = false;
+						break;
+					}
+				}
+			}
+			else
+			{
+				wheelReqMet = false;
+				break;
+			}
+		}
+		
+		return wheelReqMet;
+	}
+	
+	boolean isComponentMassReqMet(TagNode referenceRoot, TagNode worldRoot)
+	{
+		boolean componentMassReqMet = true;
+		List<TagNode> objectList = new ArrayList<TagNode>();	//	TODO: replace with get method
+		for (TagNode object : objectList)
+		{
+		/*	if (hasMultipleComponents(object))
+			{
+				
+			}
+			*/
+		}
+		
+		return componentMassReqMet;
+	}
+	
+	boolean locationSpecified(TagNode object)
+	{
+		boolean specified = false;
+		List<TagNode> poseNodes = findNodesByTagName("pose", object, 1);
+		if ((null != poseNodes) && (0 < poseNodes.size()))
+		{
+			specified = true;
+		}
+		return specified;
+	}
+	
+	boolean orientationSpecified(TagNode object)
+	{
+		boolean specified = false;
+		List<TagNode> poseNodes = findNodesByTagName("pose", object, 1);
+		if ((null != poseNodes) && (0 < poseNodes.size()))
+		{
+			specified = true;
+		}
+		return specified;
+	}
+	
+	boolean massSpecified(TagNode object)
+	{
+		boolean specified = false;
+		List<TagNode> poseNodes = findNodesByTagName("mass", object, 5);
+		if ((null != poseNodes) && (0 < poseNodes.size()))
+		{
+			specified = true;
+		}
+		return specified;
+	}
+	
+	boolean frictionSpecified(TagNode object)
+	{
+		boolean specified = false;
+		List<TagNode> poseNodes = findNodesByTagName("friction", object, 5);
+		if ((null != poseNodes) && (0 < poseNodes.size()))
+		{
+			specified = true;
+		}
+		return specified;
+	}
+	
+	boolean materialSpecified(TagNode object)
+	{
+		boolean specified = false;
+		List<TagNode> poseNodes = findNodesByTagName("material", object, 5);
+		if ((null != poseNodes) && (0 < poseNodes.size()))
+		{
+			specified = true;
+		}
+		return specified;
+	}
+	
+	List<TagNode> getMaterialList(TagNode root)
+	{
+		return findNodesByTagName("material", root, 50);
+	}
+	
+	
+	
+	/*
+	 * Incomplete methods
+	 */
+	
+	List<TagNode> getTerrainList(TagNode root)
+	{
+		return null;
+	}
+	
+	List<TagNode> getObstacleList(TagNode root)
+	{
+		return null;
+	}
+	
+	
+	
+	List<TagNode> getVehicleList(TagNode root)
+	{
+		return null;
+	}
+	
+	List<TagNode> getWheelList(TagNode root)
+	{
+		return null;
+	}
+	
+	List<TagNode> getObjectList(TagNode root)
+	{
+		return null;
+	}
+	
+	
+	
+	
+	
 	//	model or link name contains *wheel*
 	boolean modelContainsWheel(TagNode tagNode)
 	{
@@ -48,25 +271,27 @@ public class Querier
 		List<TagNode> foundNodes = new ArrayList<TagNode>();
 		List<TagNode> searchableNodes = new ArrayList<TagNode>();
 		
-		for (TagNode child : tagNode.children)
+		if (0 < maxDepth)
 		{
-			if (tagName.equalsIgnoreCase(child.tagName))
+			for (TagNode child : tagNode.children)
 			{
-				foundNodes.add(child);
+				if (tagName.equalsIgnoreCase(child.tagName))
+				{
+					foundNodes.add(child);
+				}
+				
+				//	TODO: validate assumption that child nodes cannot contain nodes with the same tagName 
+				else
+				{
+					searchableNodes.add(child);
+				}
 			}
 			
-			//	TODO: validate assumption that child nodes cannot contain nodes with the same tagName 
-			else
+			for (TagNode next : searchableNodes)
 			{
-				searchableNodes.add(child);
+				foundNodes.addAll(findNodesByTagName(tagName, next, maxDepth - 1));
 			}
 		}
-		
-		for (TagNode next : searchableNodes)
-		{
-			foundNodes.addAll(findNodesByTagName(tagName, next, maxDepth - 1));
-		}
-		
 		return foundNodes;
 	}
 	
@@ -74,15 +299,21 @@ public class Querier
 	boolean containsAttribute(TagNode tagNode, String attributeName, String regexAttributeValue)
 	{
 		boolean output = false;
-		String value;
+//		String value;
 		
 		//	TODO: rename existing attribute map to definition; use attributeMap for actual stored values
 		if (
 				(tagNode.attributeMap.containsKey(attributeName))
-				&& ((value = tagNode.attributeMap.get(attributeName)).matches(regexAttributeValue))
 			)
 		{
-			output = true;
+			for (String value : tagNode.attributeMap.get(attributeName))
+			{
+				if (value.matches(regexAttributeValue))
+				{
+					output = true;
+					break;
+				}
+			}
 		}
 		
 		return output;
