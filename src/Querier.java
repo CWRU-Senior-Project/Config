@@ -26,7 +26,10 @@ public class Querier
 		return terrainReqMet & obstacleReqMet & materialReqMet & wheelReqMet & componentMassReqMet;
 	}
 	
-	
+	/*
+	 * All environments must specify at least one terrain element’s location and orientation
+	 * that will constitute the simulation’s driving surface
+	 */
 	boolean isTerrainReqMet(TagNode referenceRoot, TagNode worldRoot)
 	{
 		boolean terrainReqMet = true;
@@ -46,6 +49,10 @@ public class Querier
 		return terrainReqMet;
 	}
 	
+	/*
+	 * All environments must specify the location, orientation, and mass of each obstacle in
+	 * the simulation
+	 */
 	boolean isObstacleReqMet(TagNode referenceRoot, TagNode worldRoot)
 	{
 		boolean obstacleReqMet = true;
@@ -53,9 +60,15 @@ public class Querier
 		for (TagNode obstacle : obstacleList)
 		{
 			if (
+					(!isStaticModel(obstacle))
+					&& (
 					(!locationSpecified(obstacle))
 					|| (!orientationSpecified(obstacle))
-					|| (massSpecified(obstacle))
+					|| (!massSpecified(obstacle))
+					
+					|| (modelHasZeroMass(obstacle))
+					|| (!modelHasFriction(obstacle))
+					)
 				)
 			{
 				obstacleReqMet = false;
@@ -66,9 +79,21 @@ public class Querier
 		return obstacleReqMet;
 	}
 	
+	/*
+	 * NOTE: remove req. SDF specifies friction with collision not material
+	 * 
+	 * All environments must specify the location, orientation, and mass of each obstacle in
+	 * the simulation
+	 * 
+	 * AUGMENTED: World cannot contain frictionless non-static objects
+	 */
 	boolean isMaterialReqMet(TagNode referenceRoot, TagNode worldRoot)
 	{
 		boolean materialReqMet = true;
+		
+		
+		return worldContainsFrictionlessNonStaticObjects(worldRoot);
+		/*
 		List<TagNode> materialList = getMaterialList(worldRoot);
 		for (TagNode material : materialList)
 		{
@@ -80,17 +105,23 @@ public class Querier
 				break;
 			}
 		}
+		*/
 		
-		return materialReqMet;
+		
+		
+		//return materialReqMet;
 	}
 	
+	/*
+	 * Each vehicle shall have at least one wheel with a valid material
+	 */
 	boolean isWheelReqMet(TagNode referenceRoot, TagNode worldRoot)
 	{
 		boolean wheelReqMet = true;
 		List<TagNode> vehicleList = new ArrayList<TagNode>();	//	TODO: replace with get method
 		for (TagNode vehicle : vehicleList)
 		{
-			List<TagNode> wheelList = new ArrayList<TagNode>();	//	TODO: replace with get method
+			List<TagNode> wheelList = getModelWheels(vehicle);
 			
 			if ((wheelReqMet) && (0 < wheelList.size()))
 			{
@@ -115,6 +146,11 @@ public class Querier
 		return wheelReqMet;
 	}
 	
+	/*
+	 * NOTE: sdf already works this way
+	 * 
+	 * Each vehicle’s mass shall be the summation of the component masses
+	 */
 	boolean isComponentMassReqMet(TagNode referenceRoot, TagNode worldRoot)
 	{
 		boolean componentMassReqMet = true;
@@ -191,7 +227,43 @@ public class Querier
 		return findNodesByTagName("material", root, 50);
 	}
 	
-	
+	/*
+	 * Retrieves all links/models corresponding to wheels
+	 * NOTE: currently uses name comparison to regex *wheel*
+	 */
+	List<TagNode> getModelWheels(TagNode model)
+	{
+		List<TagNode> wheelList = new ArrayList<TagNode>();
+		
+		//	Check for wheel models
+		List<TagNode> foundList = findNodesByTagName("model", model, 6);
+		Iterator<TagNode> iter = foundList.iterator();
+		
+		while (iter.hasNext())
+		{
+			TagNode node = iter.next();
+			
+			if (containsAttribute(node, "name", "*wheel*"))
+			{
+				wheelList.add(node);
+			}
+		}
+		
+		//	Check for wheel links
+		foundList = findNodesByTagName("link", model, 7);
+		iter = foundList.iterator();
+			
+		while (iter.hasNext())
+		{
+			TagNode node = iter.next();
+			
+			if (containsAttribute(node, "name", "*wheel*"))
+			{
+				wheelList.add(node);
+			}
+		}
+		return wheelList;
+	}
 	
 	/*
 	 * Incomplete methods
@@ -214,10 +286,6 @@ public class Querier
 		return null;
 	}
 	
-	List<TagNode> getWheelList(TagNode root)
-	{
-		return null;
-	}
 	
 	List<TagNode> getObjectList(TagNode root)
 	{
