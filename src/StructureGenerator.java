@@ -7,6 +7,24 @@ import java.util.*;
 
 public class StructureGenerator 
 {
+	/* *****************************
+	 * Properties
+	 * *****************************/
+	Map<String, Integer> typeMap = new HashMap<String, Integer>();
+	Map<String, Integer> tagTypeMap = new HashMap<String, Integer>();
+	Map<String, Integer> attributeMap = new HashMap<String, Integer>();
+	Map<String, Integer> valueMap = new HashMap<String, Integer>();
+	
+	/* *****************************
+	 * Functions
+	 * *****************************/
+	
+	/**
+	 * Extract lines from file as list of strings
+	 * 
+	 * @param filename
+	 * @return
+	 */
 	public List<String> readFromFile(String filename)
 	{
 		List<String> content = new ArrayList<String>();
@@ -23,7 +41,12 @@ public class StructureGenerator
 		
 		return content;
 	}
-	
+
+	/**
+	 * Generate representation of SDF based on known format of web page
+	 * @param inputBlock
+	 * @return
+	 */
 	public TagNode generateNodes(List<String> inputBlock)
 	{
 		TagNode parentNode = new TagNode("parent", null);
@@ -44,8 +67,8 @@ public class StructureGenerator
 					currentNode.addParent(parentNode);
 					parentNode.addChild(currentNode);
 				}
-				parentNode = getAncestor(parentNode, HtmlParser.getEndDepth(nodeBlock));
-//				System.out.println(currentNode);
+				
+				parentNode = getAncestorOrDescendent(parentNode, HtmlParser.getEndDepth(nodeBlock));
 				nodeBlock = new ArrayList<String>();
 				currentAnchor = line;
 			}
@@ -59,15 +82,19 @@ public class StructureGenerator
 		{
 			currentNode.addParent(parentNode);
 			parentNode.addChild(currentNode);
-			parentNode = getAncestor(parentNode, HtmlParser.getEndDepth(nodeBlock));
+			parentNode = getAncestorOrDescendent(parentNode, HtmlParser.getEndDepth(nodeBlock));
 		}
-//		System.out.println(currentNode);
-		
-//		System.out.println(superParent.getStructure());
+
 		return superParent;
 	}
-	
-	public TagNode getAncestor(TagNode currentNode, int depth)
+
+	/**
+	 * Retrieve the par
+	 * @param currentNode
+	 * @param depth
+	 * @return
+	 */
+	public TagNode getAncestorOrDescendent(TagNode currentNode, int depth)
 	{
 		TagNode output = null;
 		
@@ -75,37 +102,46 @@ public class StructureGenerator
 		{
 			output = currentNode;
 		}
+		
+		//	If looking for children
 		else if (0 < depth)
 		{
 			List<TagNode> children = currentNode.children;
 			if ((null != children) && (0 < children.size()))
 			{
-				output = getAncestor(children.get(children.size() - 1), depth - 1);
+				output = getAncestorOrDescendent(children.get(children.size() - 1), depth - 1);
 			}
 		}
+		
+		//	If looking for parents
 		else
 		{
 			List<TagNode> parents = currentNode.parents;
 			if ((null != parents) && (0 < parents.size()))
 			{
-				output = getAncestor(parents.get(parents.size() - 1), depth + 1);
+				output = getAncestorOrDescendent(parents.get(parents.size() - 1), depth + 1);
 			}
 		}
 		
 		return output;
 	}
 	
+	/**
+	 * Generate a new node from line contents
+	 * @param inputBlock
+	 * @return
+	 */
 	public TagNode createNode(List<String> inputBlock)
 	{
 		TagNode node = null;
 		List<String> content = new ArrayList<String>();
-//		System.out.println("Depth:\t" + HtmlParser.getEndDepth(inputBlock));
 		
 		for (String line : inputBlock)
 		{
 			content.addAll(HtmlParser.getContentFromLine(line));
 		}
 		
+		// Filter lines based on known structure
 		if ((7 <= content.size()) && (0 < content.get(0).trim().length()))
 		{
 			node = new TagNode("", null);
@@ -146,21 +182,10 @@ public class StructureGenerator
 			//	attributes	
 			int attributeIndex = content.indexOf("attributes");
 			
+			//	If attributes are present
 			if (-1 != attributeIndex)
 			{
-				/*
-				for (int i = attributeIndex; content.size() > i; i++)
-				{
-					String temp = content.get(i);
-					temp = temp.substring(0, Math.min(temp.length(), 10));
-					while (10 > temp.length())
-					{
-						temp += " ";
-					}
-					System.out.print("\t" + temp);
-				}
-				System.out.println("");
-				*/
+				//	Add each attribute to the node
 				for (int i = attributeIndex + 1; content.size() > (i + 6); i += 7)
 				{
 					String attribute = content.get(i);
@@ -190,9 +215,4 @@ public class StructureGenerator
 			map.put(key, 1);
 		}
 	}
-	
-	Map<String, Integer> typeMap = new HashMap<String, Integer>();
-	Map<String, Integer> tagTypeMap = new HashMap<String, Integer>();
-	Map<String, Integer> attributeMap = new HashMap<String, Integer>();
-	Map<String, Integer> valueMap = new HashMap<String, Integer>();
 }

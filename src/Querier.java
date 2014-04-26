@@ -6,22 +6,22 @@ import java.util.List;
 public class Querier 
 {
 	
-	boolean validateWorldFile(TagNode referenceRoot, TagNode worldRoot)
+	boolean validateWorldFile(TagNode worldRoot)
 	{
 		//	9a	terrain element location + orientation
-		boolean terrainReqMet = isTerrainReqMet(referenceRoot, worldRoot);
+		boolean terrainReqMet = isTerrainReqMet(worldRoot);
 		
 		//	9b	location, orientation, mass of obstacles
-		boolean obstacleReqMet = isObstacleReqMet(referenceRoot, worldRoot);
+		boolean obstacleReqMet = isObstacleReqMet(worldRoot);
 		
 		//	9c	material has frictional value
-		boolean materialReqMet = isMaterialReqMet(referenceRoot, worldRoot);
+		boolean materialReqMet = isMaterialReqMet(worldRoot);
 		
 		//	10a	1+ wheel with material
-		boolean wheelReqMet = isWheelReqMet(referenceRoot, worldRoot);
+		boolean wheelReqMet = isWheelReqMet(worldRoot);
 		
 		//	10b	mass = sum of components
-		boolean componentMassReqMet = isComponentMassReqMet(referenceRoot, worldRoot);
+		boolean componentMassReqMet = isComponentMassReqMet(worldRoot);
 		
 		return terrainReqMet & obstacleReqMet & materialReqMet & wheelReqMet & componentMassReqMet;
 	}
@@ -30,7 +30,7 @@ public class Querier
 	 * All environments must specify at least one terrain element’s location and orientation
 	 * that will constitute the simulation’s driving surface
 	 */
-	boolean isTerrainReqMet(TagNode referenceRoot, TagNode worldRoot)
+	boolean isTerrainReqMet(TagNode worldRoot)
 	{
 		boolean terrainReqMet = true;
 		List<TagNode> terrainList = getTerrainList(worldRoot);
@@ -53,7 +53,7 @@ public class Querier
 	 * All environments must specify the location, orientation, and mass of each obstacle in
 	 * the simulation
 	 */
-	boolean isObstacleReqMet(TagNode referenceRoot, TagNode worldRoot)
+	boolean isObstacleReqMet(TagNode worldRoot)
 	{
 		boolean obstacleReqMet = true;
 		List<TagNode> obstacleList = getObstacleList(worldRoot);
@@ -87,7 +87,7 @@ public class Querier
 	 * 
 	 * AUGMENTED: World cannot contain frictionless non-static objects
 	 */
-	boolean isMaterialReqMet(TagNode referenceRoot, TagNode worldRoot)
+	boolean isMaterialReqMet(TagNode worldRoot)
 	{
 		boolean materialReqMet = true;
 		
@@ -115,7 +115,7 @@ public class Querier
 	/*
 	 * Each vehicle shall have at least one wheel with a valid material
 	 */
-	boolean isWheelReqMet(TagNode referenceRoot, TagNode worldRoot)
+	boolean isWheelReqMet(TagNode worldRoot)
 	{
 		boolean wheelReqMet = true;
 		List<TagNode> vehicleList = new ArrayList<TagNode>();	//	TODO: replace with get method
@@ -151,7 +151,7 @@ public class Querier
 	 * 
 	 * Each vehicle’s mass shall be the summation of the component masses
 	 */
-	boolean isComponentMassReqMet(TagNode referenceRoot, TagNode worldRoot)
+	boolean isComponentMassReqMet(TagNode worldRoot)
 	{
 		boolean componentMassReqMet = true;
 		List<TagNode> objectList = new ArrayList<TagNode>();	//	TODO: replace with get method
