@@ -78,7 +78,7 @@ public class SDF_Generator
       generator.docRoot = generator.builder.generateNodes(fileLines);
       
       List<String> sdfStructure = generator.docRoot.getCompleteRecordAsList();
-      generator.writeToFile(sdfStructure, "SDF_Structure");
+      generator.writeToFile(sdfStructure, "SDF_Structure.txt");
    }
    
    /**

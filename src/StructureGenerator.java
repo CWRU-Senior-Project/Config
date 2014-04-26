@@ -51,7 +51,7 @@ public class StructureGenerator
 	{
 		TagNode parentNode = new TagNode("parent", null);
 		TagNode superParent = parentNode;
-		TagNode currentNode;
+		TagNode currentNode = null;
 		String currentAnchor = ""; 
 		
 		List<String> nodeBlock = new ArrayList<String>();
@@ -71,6 +71,11 @@ public class StructureGenerator
 				parentNode = getAncestorOrDescendent(parentNode, HtmlParser.getEndDepth(nodeBlock));
 				nodeBlock = new ArrayList<String>();
 				currentAnchor = line;
+				
+				if (null == parentNode)
+				{
+					break;
+				}
 			}
 			
 			nodeBlock.add(line);
@@ -97,6 +102,11 @@ public class StructureGenerator
 	public TagNode getAncestorOrDescendent(TagNode currentNode, int depth)
 	{
 		TagNode output = null;
+		
+		if (null == currentNode)
+		{
+			return output;
+		}
 		
 		if (0 == depth)
 		{
