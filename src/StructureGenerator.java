@@ -56,7 +56,20 @@ public class StructureGenerator
 		
 		List<String> nodeBlock = new ArrayList<String>();
 		
-		for (String line : HtmlParser.setOneDivPerLine(inputBlock))
+		List<String> dividedLines = HtmlParser.setOneDivPerLine(inputBlock);
+		int lineIndex = 0;
+		
+		for (lineIndex = 0; dividedLines.size() > lineIndex; lineIndex++)
+		{
+			if (dividedLines.get(lineIndex).contains("name=\"sdf0\""))
+			{
+				break;
+			}
+		}
+		
+		dividedLines = dividedLines.subList(lineIndex, dividedLines.size());
+		
+		for (String line : dividedLines)
 		{
 			//	if next anchor found, create node
 			if ((line.contains("<a")) && (!currentAnchor.equalsIgnoreCase(line)))

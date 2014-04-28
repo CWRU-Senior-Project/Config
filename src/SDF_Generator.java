@@ -67,7 +67,7 @@ public class SDF_Generator
       }
       else
 	  {
-		  filename = "SDF_v2.html";
+    	  filename = generator.downloadPage("http://gazebosim.org/sdf/1.4.html");
 		  System.out.println("No argument properly specified. Program accepts"
 				  + " --URL=<address> or --file=<filepath>.\n"
 				  + "Default path of " + filename +" used.");
@@ -118,7 +118,7 @@ public class SDF_Generator
 			
 			
           File outputFile = new File(outputFileName);
-          outputStream = new FileOutputStream(outputFile);
+          outputStream = new FileOutputStream(outputFileName);
 			
           //	Transfer content
           outputStream.getChannel().transferFrom(byteChannel, 0, Long.MAX_VALUE);
